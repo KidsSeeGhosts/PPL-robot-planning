@@ -1,0 +1,180 @@
+Part 1:
+1.1
+
+To describe the map I will define the atemporal predicates Location(x) and Adjacent(x,y) since the areas in the restaurant and their positions in the restaurant never change with the execution of actions.
+
+Location(x) is used to describe that x is a location (area) in the restaurant. 
+Adjacent(x,y) is used to describe that x is adjacent to y where x and y are both locations.
+
+
+1.2
+
+To keep track of the location of a plate, agent or customer I will define the fluent predicate At(x,y,s) which describes that x (either a plate,customer or agent) is at the location y in the current state s. At(x,y,s) is a fluent predicate because the location of x can change in different states with the executions of actions.
+
+
+1.3
+
+To model a plate, I will define the atemporal predicate Plate(x) which describes that x is a plate which never changes with the execution of actions.
+
+To describe if a plate has food on it, I will define the fluent predicate HasFood(x,s) which describes that x has food on it in the state s where x is a plate. It is a fluent predicate as the plate having food on it can change with the execution of actions.
+
+
+1.4
+
+To model a customer, I will define the atemporal predicate Customer(x) which describes that x is a customer which never changes with the execution of actions.
+
+To describe if a customer has been served, I will define the fluent predicate Served(x,s) which describes that x has been served in the state s where x is a customer. It is a fluent predicate as whether or not the customer has been served can change with the execution of actions.
+
+There should also be a similar atemporal predicate to model the agent. I will define this to be Agent(x) where x is an agent which never changes with the execution of actions.
+
+
+1.5
+
+-The map described in figure 1:
+
+Location(BUFF) and Location(UF) and Location(UB) and Location(MF) and Location(MB) and Location(LF) and Location(LB) and 
+Adjacent(BUFF,UF) and 
+Adjacent(UF,BUFF) and 
+Adjacent(UF,UB) and 
+Adjacent(UF,MF) and 
+Adjacent(UB,UF) and 
+Adjacent(UB,MB) and 
+Adjacent(MF,UF) and 
+Adjacent(MF,LF) and 
+Adjacent(MB,UB) and 
+Adjacent(MB,LB) and 
+Adjacent(LF,MF) and 
+Adjacent(LF,LB) and 
+Adjacent(LB,MB) and 
+Adjacent(LB,LF)
+
+The agent starts off at BUFF:
+
+Agent(waiter) and At(waiter,BUFF,s0)
+
+There is a plate at BUFF:
+
+Plate(p) and At(p,BUFF,s0)
+
+There is a single customer at LB:
+
+Customer(c) and At(c,LB,s0)
+
+
+1.6
+
+Action PickUp(a,p,x,s)
+Preconditions: Agent(a) and Plate(p) and Location(x) and not(Holding(a,p,s)) and At(a,x,s) and At(p,x,s)
+Effects: Holding(a,p,s) and not(At(p,x,s))
+
+Preconditions: The agent must not be holding a plate already, agent must be at same location as the plate to pick it up
+Effects: The agent is now holding the plate and the plate is no longer at the same location
+
+My question here is how do I say the agent is not holding any plate at all? also wondering if the robot needs to be at same location as the plate to pick it up?(I'm assuming yes)
+
+
+1.7
+
+Action HandOver(a,p,c,x,s)
+Preconditions: Agent(a) and Plate(p) and Customer(c) and Holding(a,p,s) and HasFood(p,s) and Location(x) and At(a,x,s) and At(c,x,s) and not(Served(c,s))
+Effects: Served(c,s) and not(Holding(a,p,s)) and At(p,x,s)
+
+My question here is does the agent need to be holding the plate to hand it over? Does the customer have to not already be served to be served? (Assuming yes)
+
+
+1.8
+
+Action Fill(a,p,BUFF,s)
+Preconditions: Agent(a) and Plate(p) and Holding(a,p,s) and not(HasFood(p,s)) and Location(BUFF) and At(a,BUFF,s)
+Effects: HasFood(p,s)
+
+My question here is whether or not BUFF should be an input in the action?
+
+
+1.9
+
+Action Move(a,x,y,s)
+Preconditions: Agent(a) and At(a,x,s) and Adjacent(x,y) and Adjacent(y,x)
+Effects: At(a,y,s)
+
+Might need to come back and add the Result(Move(a,x,y,s)) as the s in the effects
+
+
+
+1.10
+
+Initial State - The agent is at BUFF, there is one empty plate P at the BUFF, and there is a customer C who hasn’t yet been served at UF.
+
+Agent(a) and Location(BUFF) and At(a,BUFF,s) and Plate(p) and At(p,BUFF,s) and not(HasFood(p,s)) and Customer(c) and Location(UF) and At(c,UF,s) and not(Served(c,s)) and Adjacent(BUFF,UF) and Adjacent(UF,BUFF) and not(Holding(a,p,s))
+
+Goal State - The customer C has been served
+
+Served(c,s)
+
+Relevant actions:
+1. Action HandOver(a,p,c,UF,s)
+
+Current Goal State after action 1: (using the preconditions that haven't been met of action 1)
+Agent(a) and Plate(p) and Customer(c) and Holding(a,p,s) and HasFood(p,s) and Location(UF) and At(a,UF,s) and At(c,UF,s) and not(Served(c,s))
+Subtracting initial states gives us the goal state
+Holding(a,p,s) and HasFood(p,s) and At(a,UF,s)
+
+Relevant actions:
+1. Action PickUp(a,p,BUFF,s)
+2. Action Fill(a,p,BUFF,s)
+3. Action Move(a,BUFF,UF,s)
+
+Current Goal State after action 3: (was only able to do action 3 because I made UF and BUFF adjacent in intial conditions)
+Agent(a) and At(a,BUFF,UF) and Adjacent(BUFF,UF) and Adjacent(UF,BUFF) and Holding(a,p,s) and HasFood(p,s)
+Subtracting initial states gives us the goal state
+Holding(a,p,s) and HasFood(p,s)
+
+
+Relevant actions:
+1. Action PickUp(a,p,BUFF,s)
+2. Action Fill(a,p,BUFF,s)
+
+Current Goal State after action 2:
+Agent(a) and Plate(p) and Holding(a,p,s) and not(HasFood(p,s)) and Location(BUFF) and At(a,BUFF,s)
+Subtracting initial states gives us the goal state
+Holding(a,p,s)
+
+Relevant actions:
+1. Action PickUp(a,p,BUFF,s)
+
+Current Goal State after action 1:
+Agent(a) and Plate(p) and Location(BUFF) and not(Holding(a,p,s)) and At(a,BUFF,s) and At(p,BUFF,s)
+The goal state as empty as all states in the current goal state are initial states
+
+So the plan is:
+1. Action PickUp(a,p,BUFF,s)
+2. Action Fill(a,p,BUFF,s)
+3. Action Move(a,BUFF,UF,s)
+4. Action HandOver(a,p,c,UF,s)
+
+
+Part 4:
+4.1
+
+Hot tea and coffee
+Ice cream dessert
+Sushi
+
+Goals would need to be updated to ensure that hot tea and coffee are not served cold and ice-cream dessert is not served melted. Customer has to be served the right thing.
+
+Actions would include prepareIceCream and prepareHotDrink which would require preconditions that the restaurant is clean. This is so that the agent doesn't prepare a dish and proceed to leave the dish melting/getting cold while it cleans the restaurant in order to reach the customer. Also need to be at the buffet to prepare ice cream or coffee.
+A new predicate could be made called CleanRestaurant(x) which describes if the entire restaurant is clean. 
+
+
+Actions pickUpIceCream and prepareHotDrink would require preconditions that the ice cream is not melted and hot drink is hot. The effect would be you are holding cold ice cream /hot coffee/tea.
+
+I would make a predicate that if the agent is no longer in the same place as the new ice cream or coffee then it is melted/cold. This is the key!
+
+These are the right answers I believe. I will write the action and goals in a more formal way later on!
+
+4.2
+
+Customers orders need to be done first come first served. However a new order from an already existing customer should be bumped up the queue in order to complete their service faster and free up a table for another customer. Longer tasks should be done first and shorter tasks should be done second. Serving should have higher priority than cleaning but broken glass should be cleaned up immediately. The goals would need to be continuously updated and reprioritised. Perhaps each action could have a number of points attached correlating to its priority, therefore the robot will pick actions that give the highest number of points and perform a path that can maximise points. The robot's competence could be judged by its final score. Each time an order is served, the other orders should have their score increased by 1. Orders start at 1 point and increase. Serving dessert/hot drink could start off at 4 points as it needs to be done quicker. Tables further away from the buffet could start higher score too since it takes longer to do that order than an order from a table right beside the buffet. 
+
+
+
